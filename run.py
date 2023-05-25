@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, g
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -13,17 +13,21 @@ app.config.update(
 
 db = SQLAlchemy(app)
 
+@app.before_request
+def some_function():
+    g.string = '<br>This code ran before any request'
 
+# BASIC ROUTE
 @app.route('/index')
 @app.route('/')
-def hello_world():
-    return 'Hello flask!'
+def hello_flask():
+    return 'Hello flask! <br>' + g.string
 
 
 @app.route('/new/')
 def query_strings(greeting = 'hello'):
     query_val = request.args.get('greeting', greeting)
-    return '<h1> the greeting is : {0} </h1>'.format(query_val)
+    return '<h1> the greeting is : {0} </h1>'.format(query_val) + g.string
 
 
 @app.route('/user/')
@@ -119,6 +123,14 @@ def jinja_macros():
                    'spiderman - homecoming': 1.48}
 
     return render_template('using_macros.html', movies=movies_dict)
+
+
+# SESSION OBJECT
+@app.route('/session')
+def session_data():
+    if 'name' not in session:
+        session['name'] = 'harry'
+    return render_template('session.html', session=session, name=session['name'])
 
 
 # PUBLICATION TABLE
